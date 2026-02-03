@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './api/auth/auth.module';
 import { RoomsModule } from './api/rooms/rooms.module';
 import { BookingsModule } from './api/bookings/booking.module';
-import { UploadService } from './infrastructure/uploads/upload.module';
+import { UploadModule } from './infrastructure/uploads/upload.module';
 
 import { config } from './config';
 
@@ -25,7 +25,7 @@ import { config } from './config';
     AuthModule,
     RoomsModule,
     BookingsModule,
-    UploadService,
+    UploadModule,
   ],
 })
 export class AppModule {}

@@ -1,14 +1,9 @@
-// src/infrastructure/upload/upload.service.ts
-import { Injectable } from '@nestjs/common';
-import { Express } from 'express';
+// src/infrastructure/upload/upload.module.ts
+import { Module } from '@nestjs/common';
+import { UploadService } from './upload.service';
 
-@Injectable()
-export class UploadService {
-  async saveFile(file: Express.Multer.File) {
-    return {
-      message: 'File uploaded successfully!',
-      filename: file.filename,
-      path: `/uploads/images/${file.filename}`,
-    };
-  }
-}
+@Module({
+  providers: [UploadService],
+  exports: [UploadService], 
+})
+export class UploadModule {}
