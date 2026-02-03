@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { User } from '../../core/entity/user.entity';
 import { TokenService } from '../../infrastructure/token/Token';  
 import { config } from '../../config';
+import { JwtStrategy } from './strategy/jwt.strategy';
+
 
 @Module({
   imports: [

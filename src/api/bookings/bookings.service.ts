@@ -1,32 +1,57 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 
+interface Booking {
+  id: number;
+  roomId: number;
+  userId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  guestsCount: number;
+  totalPrice: number;
+}
+
 @Injectable()
 export class BookingsService {
-  private bookings = [
-    { id: 1, roomId: 1, userId: 1, checkInDate: '2026-02-10', checkOutDate: '2026-02-15', guestsCount: 2, totalPrice: 750 },
+  private bookings: Booking[] = [
+    {
+      id: 1,
+      roomId: 1,
+      userId: 1,
+      checkInDate: '2026-02-10',
+      checkOutDate: '2026-02-15',
+      guestsCount: 2,
+      totalPrice: 750,
+    },
   ];
 
-  create(createBookingDto: CreateBookingDto, userId: number) {
-    // Narx hisoblash uchun room narxini topish kerak (hozircha mock)
-    const roomPricePerNight = 150; // keyinroq rooms service dan olinadi
+  create(createBookingDto: CreateBookingDto, userId: number): Booking {
+    const roomPricePerNight = 150;
 
     const checkIn = new Date(createBookingDto.checkInDate);
     const checkOut = new Date(createBookingDto.checkOutDate);
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+    const nights = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     if (nights <= 0) {
-      throw new BadRequestException('Check-out date must be after check-in date');
+      throw new BadRequestException(
+        'Check-out date must be after check-in date',
+      );
     }
 
     const totalPrice = nights * roomPricePerNight;
 
-    const newBooking = {
+    const newBooking: Booking = {
       id: this.bookings.length + 1,
-      roomId: createBookingDto.roomId,
       userId,
-      ...createBookingDto,
+      ...createBookingDto, // roomId приходит отсюда
       totalPrice,
     };
 
@@ -34,11 +59,11 @@ export class BookingsService {
     return newBooking;
   }
 
-  findAll() {
+  findAll(): Booking[] {
     return this.bookings;
   }
 
-  findOneById(id: number) {
+  findOneById(id: number): Booking {
     const booking = this.bookings.find(b => b.id === id);
     if (!booking) {
       throw new NotFoundException('Booking not found');
@@ -46,14 +71,13 @@ export class BookingsService {
     return booking;
   }
 
-  update(id: number, updateBookingDto: UpdateBookingDto) {
+  update(id: number, updateBookingDto: UpdateBookingDto): Booking {
     const booking = this.findOneById(id);
     Object.assign(booking, updateBookingDto);
-    // Narxni qayta hisoblash kerak bo‘lsa — keyinroq qo‘shamiz
     return booking;
   }
 
-  delete(id: number) {
+  delete(id: number): { message: string } {
     const index = this.bookings.findIndex(b => b.id === id);
     if (index === -1) {
       throw new NotFoundException('Booking not found');

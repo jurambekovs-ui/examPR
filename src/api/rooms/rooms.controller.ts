@@ -1,19 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { JwtAuthGuard } from '../../common/guard/jwt-auth.guard';
 import { RolesGuard } from '../../common/guard/roles.guard';
-import { RolesDecorator } from '../../common/decorator/roles.decorator';
-import { Roles } from '../../common/enum/roles.enum';
+import { RolesDecorator } from '../../common/decorator/roles.decorator'; // to‘g‘ri import
+import { Roles } from '../../common/enums/roles.enum'; // enum to‘g‘ri
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Roles.ADMIN, Roles.SUPERADMIN)
   @Post()
+  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
   create(@Body() createRoomDto: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
@@ -28,17 +38,18 @@ export class RoomsController {
     return this.roomsService.findOneById(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Roles.ADMIN, Roles.SUPERADMIN)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateRoomDto: UpdateRoomDto) {
+  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRoomDto: UpdateRoomDto,
+  ) {
     return this.roomsService.update(id, updateRoomDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Roles.ADMIN, Roles.SUPERADMIN)
   @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number) {
+  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.roomsService.delete(id);
   }
 }

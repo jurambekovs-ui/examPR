@@ -7,9 +7,7 @@ export class App {
   static async main() {
     const app = await NestFactory.create(AppModule);
     const PORT = config.PORT;
-
-    app.setGlobalPrefix('api');
-
+    app.setGlobalPrefix('/api');
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
@@ -18,8 +16,6 @@ export class App {
         errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       }),
     );
-
-    await app.listen(PORT);
-    console.log('Server running on port', PORT);
+    app.listen(PORT, () => console.log('Server running on port', PORT));
   }
 }
