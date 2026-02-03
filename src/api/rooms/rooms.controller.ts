@@ -1,55 +1,55 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Param,
-  Body,
-  UseGuards,
-  ParseIntPipe,
-} from '@nestjs/common';
-import { RoomsService } from './rooms.service';
+// src/api/rooms/rooms.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { JwtAuthGuard } from '../../common/guard/jwt-auth.guard';
-import { RolesGuard } from '../../common/guard/roles.guard';
-import { RolesDecorator } from '../../common/decorator/roles.decorator'; // to‘g‘ri import
-import { Roles } from '../../common/enums/roles.enum'; // enum to‘g‘ri
 
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('rooms')
+export interface Room {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+@Injectable()
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) {}
+  private rooms: Room[] = [];
+  private idCounter = 1;
 
-  @Post()
-  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  create(dto: CreateRoomDto): Room {
+    const room: Room = {
+      id: this.idCounter++,
+      name: dto.name,
+      description: dto.description,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.rooms.push(room);
+    return room;
   }
 
-  @Get()
-  findAll() {
-    return this.roomsService.findAll();
+  findAll(): Room[] {
+    return this.rooms;
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roomsService.findOneById(id);
+  findOneById(id: number): Room {
+    const room = this.rooms.find(r => r.id === id);
+    if (!room) throw new NotFoundException(`Room with id ${id} not found`);
+    return room;
   }
 
-  @Patch(':id')
-  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateRoomDto: UpdateRoomDto,
-  ) {
-    return this.roomsService.update(id, updateRoomDto);
+  update(id: number, dto: UpdateRoomDto): Room {
+    const room = this.findOneById(id);
+    room.name = dto.name ?? room.name;
+    room.description = dto.description ?? room.description;
+    room.updatedAt = new Date();
+    return room;
   }
 
-  @Delete(':id')
-  @RolesDecorator(Roles.SUPERADMIN, Roles.ADMIN)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.roomsService.delete(id);
+  delete(id: number): { message: string } {
+    const index = this.rooms.findIndex(r => r.id === id);
+    if (index === -1) throw new NotFoundException(`Room with id ${id} not found`);
+    this.rooms.splice(index, 1);
+    return { message: 'Room deleted successfully' };
   }
 }

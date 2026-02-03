@@ -1,50 +1,54 @@
+// src/api/rooms/rooms.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 
+export interface Room {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Injectable()
 export class RoomsService {
-  private rooms = [
-    { id: 1, name: 'Deluxe Room', description: 'Luxury room with sea view', pricePerNight: 150, capacity: 2, imageUrl: '/uploads/room1.jpg' },
-    { id: 2, name: 'Standard Room', description: 'Comfortable room', pricePerNight: 80, capacity: 2, imageUrl: '/uploads/room2.jpg' },
-  ];
+  private rooms: Room[] = [];
+  private idCounter = 1;
 
-  create(createRoomDto: CreateRoomDto) {
-    const newRoom = {
-      id: this.rooms.length + 1,
-      name: createRoomDto.name,
-      description: createRoomDto.description ?? '',
-      pricePerNight: createRoomDto.pricePerNight,
-      capacity: createRoomDto.capacity,
-      imageUrl: createRoomDto.imageUrl ?? '',
+  create(dto: CreateRoomDto): Room {
+    const room: Room = {
+      id: this.idCounter++,
+      name: dto.name,
+      description: dto.description,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
-    this.rooms.push(newRoom);
-    return newRoom;
+    this.rooms.push(room);
+    return room;
   }
 
-  findAll() {
+  findAll(): Room[] {
     return this.rooms;
   }
 
-  findOneById(id: number) {
+  findOneById(id: number): Room {
     const room = this.rooms.find(r => r.id === id);
-    if (!room) {
-      throw new NotFoundException('Room not found');
-    }
+    if (!room) throw new NotFoundException(`Room with id ${id} not found`);
     return room;
   }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
+  update(id: number, dto: UpdateRoomDto): Room {
     const room = this.findOneById(id);
-    Object.assign(room, updateRoomDto);
+    room.name = dto.name ?? room.name;
+    room.description = dto.description ?? room.description;
+    room.updatedAt = new Date();
     return room;
   }
 
-  delete(id: number) {
+  delete(id: number): { message: string } {
     const index = this.rooms.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new NotFoundException('Room not found');
-    }
+    if (index === -1) throw new NotFoundException(`Room with id ${id} not found`);
     this.rooms.splice(index, 1);
     return { message: 'Room deleted successfully' };
   }
